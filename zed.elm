@@ -13,7 +13,7 @@ import Game exposing (Difficulty)
 
 
 type Class
-    = Clot
+    = Cyst
     | Scrake
 
 
@@ -29,7 +29,7 @@ type alias Health =
 getHealth : Class -> Game.Difficulty -> Game.NumOfPlayers -> HitZone -> Health
 getHealth class difficulty numOfPlayers hitZone =
     case class of
-        Clot ->
+        Cyst ->
             case difficulty of
                 Game.Normal ->
                     case hitZone of
@@ -281,7 +281,7 @@ getHealth class difficulty numOfPlayers hitZone =
 getHitZoneDamageScale : Class -> HitZone -> Damage.Scale
 getHitZoneDamageScale class hitZone =
     case class of
-        Clot ->
+        Cyst ->
             case hitZone of
                 Head ->
                     1.1
@@ -301,7 +301,7 @@ getHitZoneDamageScale class hitZone =
 getDamageResistance : Class -> Damage.Class -> Damage.Scale
 getDamageResistance class damageClass =
     case class of
-        Clot ->
+        Cyst ->
             case damageClass of
                 Damage.BallisticHandgun ->
                     1.01

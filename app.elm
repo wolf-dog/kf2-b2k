@@ -11,16 +11,15 @@ import Game
         , difficultyToStr
         , numOfPlayersFromStr
         )
-import Html exposing (Html, div, h1, h2, input, option, p, select, text)
-import Html.Attributes exposing (placeholder, value)
+import Html exposing (Html, br, div, h1, h2, input, option, p, select, table, td, text, th, tr)
+import Html.Attributes exposing (colspan, placeholder, value)
 import Html.Events exposing (onInput)
 import Player
     exposing
         ( Level
         , Perk
         , Player
-        , Skill
-        , getSkill1Name
+        , getSkillNames
         , levelFromStr
         , perkFromStr
         , perkToStr
@@ -58,11 +57,11 @@ init =
         1
         { perk = Player.SharpShooter
         , level = 1
-        , skill1 = Player.NotApplied
-        , skill2 = Player.NotApplied
-        , skill3 = Player.NotApplied
-        , skill4 = Player.NotApplied
-        , skill5 = Player.NotApplied
+        , skill1 = Player.NoSkill
+        , skill2 = Player.NoSkill
+        , skill3 = Player.NoSkill
+        , skill4 = Player.NoSkill
+        , skill5 = Player.NoSkill
         }
     , Cmd.none
     )
@@ -115,11 +114,11 @@ update msg model =
                 | player =
                     { perk = fixed
                     , level = model.player.level
-                    , skill1 = Player.NotApplied
-                    , skill2 = Player.NotApplied
-                    , skill3 = Player.NotApplied
-                    , skill4 = Player.NotApplied
-                    , skill5 = Player.NotApplied
+                    , skill1 = Player.NoSkill
+                    , skill2 = Player.NoSkill
+                    , skill3 = Player.NoSkill
+                    , skill4 = Player.NoSkill
+                    , skill5 = Player.NoSkill
                     }
               }
             , Cmd.none
@@ -248,23 +247,23 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        damageScarClotHead =
-            Calculator.calcDamage model.player Weapon.Scar Zed.Clot Zed.Head
+        damageScarCystHead =
+            Calculator.calcDamage model.player Weapon.Scar Zed.Cyst Zed.Head
 
-        damageScarClotBody =
-            Calculator.calcDamage model.player Weapon.Scar Zed.Clot Zed.Body
+        damageScarCystBody =
+            Calculator.calcDamage model.player Weapon.Scar Zed.Cyst Zed.Body
 
-        damageM14ClotHead =
-            Calculator.calcDamage model.player Weapon.M14 Zed.Clot Zed.Head
+        damageM14CystHead =
+            Calculator.calcDamage model.player Weapon.M14 Zed.Cyst Zed.Head
 
-        damageM14ClotBody =
-            Calculator.calcDamage model.player Weapon.M14 Zed.Clot Zed.Body
+        damageM14CystBody =
+            Calculator.calcDamage model.player Weapon.M14 Zed.Cyst Zed.Body
 
-        damageRailgunClotHead =
-            Calculator.calcDamage model.player Weapon.Railgun Zed.Clot Zed.Head
+        damageRailgunCystHead =
+            Calculator.calcDamage model.player Weapon.Railgun Zed.Cyst Zed.Head
 
-        damageRailgunClotBody =
-            Calculator.calcDamage model.player Weapon.Railgun Zed.Clot Zed.Body
+        damageRailgunCystBody =
+            Calculator.calcDamage model.player Weapon.Railgun Zed.Cyst Zed.Body
 
         damageScarScrakeHead =
             Calculator.calcDamage model.player Weapon.Scar Zed.Scrake Zed.Head
@@ -284,221 +283,287 @@ view model =
         damageRailgunScrakeBody =
             Calculator.calcDamage model.player Weapon.Railgun Zed.Scrake Zed.Body
 
-        healthClotHead =
-            Zed.getHealth Zed.Clot model.difficulty model.numOfPlayers Zed.Head
+        healthCystHead =
+            Zed.getHealth Zed.Cyst model.difficulty model.numOfPlayers Zed.Head
 
-        healthClotBody =
-            Zed.getHealth Zed.Clot model.difficulty model.numOfPlayers Zed.Body
+        healthCystBody =
+            Zed.getHealth Zed.Cyst model.difficulty model.numOfPlayers Zed.Body
 
         healthScrakeHead =
             Zed.getHealth Zed.Scrake model.difficulty model.numOfPlayers Zed.Head
 
         healthScrakeBody =
             Zed.getHealth Zed.Scrake model.difficulty model.numOfPlayers Zed.Body
+
+        ( skill1, skill2, skill3, skill4, skill5 ) =
+            getSkillNames model.player.perk
+
+        skillOptions1 =
+            generateSkillOptions skill1
+
+        skillOptions2 =
+            generateSkillOptions skill2
+
+        skillOptions3 =
+            generateSkillOptions skill3
+
+        skillOptions4 =
+            generateSkillOptions skill4
+
+        skillOptions5 =
+            generateSkillOptions skill5
     in
     div []
         [ h1 [] [ text "calc" ]
-        , h2 [] [ text "Clot" ]
-        , p []
-            [ text <|
-                toString healthClotHead
-                    ++ " / "
-                    ++ toString damageScarClotHead
-                    ++ " [ to kill by Scar: "
-                    ++ (Calculator.calcBulletsToKill damageScarClotHead healthClotHead
+        , div []
+            [ select
+                [ value <| Game.difficultyToStr model.difficulty
+                , onInput ChangeDifficulty
+                ]
+                [ option [ value "normal" ] [ text "Normal" ]
+                , option [ value "hard" ] [ text "Hard" ]
+                , option [ value "suicidal" ] [ text "Suicidal" ]
+                , option [ value "hellonearth" ] [ text "Hell on Earth" ]
+                ]
+            , input
+                [ placeholder "Number of Players"
+                , onInput ChangeNumOfPlayers
+                ]
+                []
+            ]
+        , div []
+            [ select
+                [ value <| Player.perkToStr model.player.perk
+                , onInput ChangePerk
+                ]
+                [ option [ value "sharpshooter" ] [ text "SharpShooter" ]
+                , option [ value "commando" ] [ text "Commando" ]
+                ]
+            , input
+                [ placeholder "Level"
+                , onInput ChangeLevel
+                ]
+                []
+            ]
+        , div []
+            [ select
+                [ value <| Player.skillToStr model.player.skill1
+                , onInput ChangeSkill1
+                ]
+                skillOptions1
+            , select
+                [ value <| Player.skillToStr model.player.skill2
+                , onInput ChangeSkill2
+                ]
+                skillOptions2
+            , select
+                [ value <| Player.skillToStr model.player.skill3
+                , onInput ChangeSkill3
+                ]
+                skillOptions3
+            , select
+                [ value <| Player.skillToStr model.player.skill4
+                , onInput ChangeSkill4
+                ]
+                skillOptions4
+            , select
+                [ value <| Player.skillToStr model.player.skill5
+                , onInput ChangeSkill5
+                ]
+                skillOptions5
+            ]
+        , table []
+            [ tr []
+                [ th [] []
+                , th [ colspan 2 ] [ text "Cyst" ]
+                , th [ colspan 2 ] [ text "Scrake" ]
+                ]
+            , tr []
+                [ th [] []
+                , th [] [ text "Head" ]
+                , th [] [ text "Body" ]
+                , th [] [ text "Head" ]
+                , th [] [ text "Body" ]
+                ]
+            , tr []
+                [ th [] [ text "Scar" ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageScarCystHead healthCystHead
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthClotBody
-                    ++ " / "
-                    ++ toString damageScarClotBody
-                    ++ " [ to kill by Scar: "
-                    ++ (Calculator.calcBulletsToKill damageScarClotBody healthClotBody
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthCystHead
+                            ++ " / "
+                            ++ toString damageScarCystHead
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageScarCystBody healthCystBody
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthClotHead
-                    ++ " / "
-                    ++ toString damageM14ClotHead
-                    ++ " [ to kill by M14: "
-                    ++ (Calculator.calcBulletsToKill damageM14ClotHead healthClotHead
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthCystBody
+                            ++ " / "
+                            ++ toString damageScarCystBody
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageScarScrakeHead healthScrakeHead
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthClotBody
-                    ++ " / "
-                    ++ toString damageM14ClotBody
-                    ++ " [ to kill by M14: "
-                    ++ (Calculator.calcBulletsToKill damageM14ClotBody healthClotBody
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthScrakeHead
+                            ++ " / "
+                            ++ toString damageScarScrakeHead
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageScarScrakeBody healthScrakeBody
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthClotHead
-                    ++ " / "
-                    ++ toString damageRailgunClotHead
-                    ++ " [ to kill by Railgun: "
-                    ++ (Calculator.calcBulletsToKill damageRailgunClotHead healthClotHead
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthScrakeBody
+                            ++ " / "
+                            ++ toString damageScarScrakeBody
+                            ++ " )"
+                    ]
+                ]
+            , tr []
+                [ th [] [ text "M14" ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageM14CystHead healthCystHead
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthClotBody
-                    ++ " / "
-                    ++ toString damageRailgunClotBody
-                    ++ " [ to kill by Railgun: "
-                    ++ (Calculator.calcBulletsToKill damageRailgunClotBody healthClotBody
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthCystHead
+                            ++ " / "
+                            ++ toString damageM14CystHead
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageM14CystBody healthCystBody
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , h2 [] [ text "Scrake " ]
-        , p []
-            [ text <|
-                toString healthScrakeHead
-                    ++ " / "
-                    ++ toString damageScarScrakeHead
-                    ++ " [ to kill by Scar: "
-                    ++ (Calculator.calcBulletsToKill damageScarScrakeHead healthScrakeHead
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthCystBody
+                            ++ " / "
+                            ++ toString damageM14CystBody
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageM14ScrakeHead healthScrakeHead
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthScrakeBody
-                    ++ " / "
-                    ++ toString damageScarScrakeBody
-                    ++ " [ to kill by Scar: "
-                    ++ (Calculator.calcBulletsToKill damageScarScrakeBody healthScrakeBody
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthScrakeHead
+                            ++ " / "
+                            ++ toString damageM14ScrakeHead
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageM14ScrakeBody healthScrakeBody
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthScrakeHead
-                    ++ " / "
-                    ++ toString damageM14ScrakeHead
-                    ++ " [ to kill by M14: "
-                    ++ (Calculator.calcBulletsToKill damageM14ScrakeHead healthScrakeHead
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthScrakeBody
+                            ++ " / "
+                            ++ toString damageM14ScrakeBody
+                            ++ " )"
+                    ]
+                ]
+            , tr []
+                [ th [] [ text "Railgun" ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageRailgunCystHead healthCystHead
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthScrakeBody
-                    ++ " / "
-                    ++ toString damageM14ScrakeBody
-                    ++ " [ to kill by M14: "
-                    ++ (Calculator.calcBulletsToKill damageM14ScrakeBody healthScrakeBody
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthCystHead
+                            ++ " / "
+                            ++ toString damageRailgunCystHead
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageRailgunCystBody healthCystBody
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthScrakeHead
-                    ++ " / "
-                    ++ toString damageRailgunScrakeHead
-                    ++ " [ to kill by Railgun: "
-                    ++ (Calculator.calcBulletsToKill damageRailgunScrakeHead healthScrakeHead
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthCystBody
+                            ++ " / "
+                            ++ toString damageRailgunCystBody
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageRailgunScrakeHead healthScrakeHead
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , p []
-            [ text <|
-                toString healthScrakeBody
-                    ++ " / "
-                    ++ toString damageRailgunScrakeBody
-                    ++ " [ to kill by Railgun: "
-                    ++ (Calculator.calcBulletsToKill damageRailgunScrakeBody healthScrakeBody
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthScrakeHead
+                            ++ " / "
+                            ++ toString damageRailgunScrakeHead
+                            ++ " )"
+                    ]
+                , td []
+                    [ text <|
+                        (Calculator.calcBulletsToKill damageRailgunScrakeBody healthScrakeBody
                             |> toString
-                       )
-                    ++ " ]"
-            ]
-        , select
-            [ value <| Game.difficultyToStr model.difficulty
-            , onInput ChangeDifficulty
-            ]
-            [ option [ value "normal" ] [ text "Normal" ]
-            , option [ value "hard" ] [ text "Hard" ]
-            , option [ value "suicidal" ] [ text "Suicidal" ]
-            , option [ value "hellonearth" ] [ text "Hell on Earth" ]
-            ]
-        , input
-            [ placeholder "Number of Players"
-            , onInput ChangeNumOfPlayers
-            ]
-            []
-        , select
-            [ value <| Player.perkToStr model.player.perk
-            , onInput ChangePerk
-            ]
-            [ option [ value "sharpshooter" ] [ text "SharpShooter" ]
-            , option [ value "commando" ] [ text "Commando" ]
-            ]
-        , input
-            [ placeholder "Level"
-            , onInput ChangeLevel
-            ]
-            []
-        , select
-            [ value <| Player.skillToStr model.player.skill1
-            , onInput ChangeSkill1
-            ]
-            [ option [ value "not_applied" ] [ text "Not Applied" ]
-            , option [ value "left" ] [ text (getSkill1Name model.player.perk Player.Left) ]
-            , option [ value "right" ] [ text (getSkill1Name model.player.perk Player.Right) ]
-            ]
-        , select
-            [ value <| Player.skillToStr model.player.skill2
-            , onInput ChangeSkill2
-            ]
-            [ option [ value "not_applied" ] [ text "Not Applied" ]
-            , option [ value "left" ] [ text "Left" ]
-            , option [ value "right" ] [ text "Right" ]
-            ]
-        , select
-            [ value <| Player.skillToStr model.player.skill3
-            , onInput ChangeSkill3
-            ]
-            [ option [ value "not_applied" ] [ text "Not Applied" ]
-            , option [ value "left" ] [ text "Left" ]
-            , option [ value "right" ] [ text "Right" ]
-            ]
-        , select
-            [ value <| Player.skillToStr model.player.skill4
-            , onInput ChangeSkill4
-            ]
-            [ option [ value "not_applied" ] [ text "Not Applied" ]
-            , option [ value "left" ] [ text "Left" ]
-            , option [ value "right" ] [ text "Right" ]
-            ]
-        , select
-            [ value <| Player.skillToStr model.player.skill5
-            , onInput ChangeSkill5
-            ]
-            [ option [ value "not_applied" ] [ text "Not Applied" ]
-            , option [ value "left" ] [ text "Left" ]
-            , option [ value "right" ] [ text "Right" ]
+                        )
+                    , br [] []
+                    , text <|
+                        " ("
+                            ++ toString healthScrakeBody
+                            ++ " / "
+                            ++ toString damageRailgunScrakeBody
+                            ++ " )"
+                    ]
+                ]
             ]
         ]
+
+
+generateSkillOptions : List String -> List (Html msg)
+generateSkillOptions skills =
+    List.map
+        (\skill ->
+            option
+                [ value skill ]
+                [ text skill ]
+        )
+        skills
+        |> List.append [ option [ value "No Skill" ] [ text "No Skill" ] ]
 
 
 

@@ -6,7 +6,7 @@ module Player
         , Skill(..)
         , castDamage
         , getDamageScale
-        , getSkill1Name
+        , getSkillNames
         , levelFromStr
         , perkFromStr
         , perkToStr
@@ -69,9 +69,170 @@ levelFromStr level =
 
 
 type Skill
-    = NotApplied
-    | Left
-    | Right
+    = NoSkill
+      -- Commando
+    | TacticalReloadCommando
+    | HighCapacityMags
+    | Fallback
+    | ImpactRounds
+    | Tenacious
+    | Prepared
+    | HollowPointRounds
+    | EatLead
+    | Tactician
+    | MachineGunner
+      -- SharpShooter
+    | Sniper
+    | Marksman
+    | Stability
+    | BallisticShock
+    | RackEmUpFirst
+    | RackEmUpMax
+    | TacticalReloadSharpShooter
+    | DeadEye
+    | AlwaysPrepared
+    | Assassin
+    | Ranger
+
+
+skillFromStr : String -> Skill
+skillFromStr skill =
+    case skill of
+        "Tactical Reload (Commando)" ->
+            TacticalReloadCommando
+
+        "High Capacity Mags" ->
+            HighCapacityMags
+
+        "Fallback" ->
+            Fallback
+
+        "Impact Rounds" ->
+            ImpactRounds
+
+        "Tenacious" ->
+            Tenacious
+
+        "Prepared" ->
+            Prepared
+
+        "Hollow Point Rounds" ->
+            HollowPointRounds
+
+        "Eat Lead" ->
+            EatLead
+
+        "ZED TIME - Tactician" ->
+            Tactician
+
+        "ZED TIME - Machine Gunner" ->
+            MachineGunner
+
+        "Sniper" ->
+            Sniper
+
+        "Marksman" ->
+            Marksman
+
+        "Stability" ->
+            Stability
+
+        "Ballistic Shock" ->
+            BallisticShock
+
+        "Rack'em Up (First shot)" ->
+            RackEmUpFirst
+
+        "Rack'em Up (Max)" ->
+            RackEmUpMax
+
+        "Tactical Reload (SharpShooter)" ->
+            TacticalReloadSharpShooter
+
+        "DeadEye" ->
+            DeadEye
+
+        "Always Prepared" ->
+            AlwaysPrepared
+
+        "ZED TIME - Assassin" ->
+            Assassin
+
+        "ZED TIME - Ranger" ->
+            Ranger
+
+        _ ->
+            NoSkill
+
+
+skillToStr : Skill -> String
+skillToStr skill =
+    case skill of
+        TacticalReloadCommando ->
+            "Tactical Reload (Commando)"
+
+        HighCapacityMags ->
+            "High Capacity Mags"
+
+        Fallback ->
+            "Fallback"
+
+        ImpactRounds ->
+            "Impact Rounds"
+
+        Tenacious ->
+            "Tenacious"
+
+        Prepared ->
+            "Prepared"
+
+        HollowPointRounds ->
+            "Hollow Point Rounds"
+
+        EatLead ->
+            "Eat Lead"
+
+        Tactician ->
+            "ZED TIME - Tactician"
+
+        MachineGunner ->
+            "ZED TIME - Machine Gunner"
+
+        Sniper ->
+            "Sniper"
+
+        Marksman ->
+            "Marksman"
+
+        Stability ->
+            "Stability"
+
+        BallisticShock ->
+            "Ballistic Shock"
+
+        RackEmUpFirst ->
+            "Rack'em Up (First shot)"
+
+        RackEmUpMax ->
+            "Rack'em Up (Max)"
+
+        TacticalReloadSharpShooter ->
+            "Tactical Reload (SharpShooter)"
+
+        DeadEye ->
+            "DeadEye"
+
+        AlwaysPrepared ->
+            "Always Prepared"
+
+        Assassin ->
+            "ZED TIME - Assassin"
+
+        Ranger ->
+            "ZED TIME - Ranger"
+
+        NoSkill ->
+            "No Skill"
 
 
 type alias Player =
@@ -99,11 +260,11 @@ getDamageScale : Player -> Weapon.Class -> Zed.HitZone -> Damage.Scale
 getDamageScale player weapon hitZone =
     1.0
         + getGeneralDamageScale player weapon hitZone
-        + getSkill1DamageScale player weapon hitZone
-        + getSkill2DamageScale player weapon hitZone
-        + getSkill3DamageScale player weapon hitZone
-        + getSkill4DamageScale player weapon hitZone
-        + getSkill5DamageScale player weapon hitZone
+        + getSkillDamageScale player.skill1 weapon hitZone
+        + getSkillDamageScale player.skill2 weapon hitZone
+        + getSkillDamageScale player.skill3 weapon hitZone
+        + getSkillDamageScale player.skill4 weapon hitZone
+        + getSkillDamageScale player.skill5 weapon hitZone
 
 
 getGeneralDamageScale : Player -> Weapon.Class -> Zed.HitZone -> Damage.Scale
@@ -124,91 +285,58 @@ getGeneralDamageScale player weapon hitZone =
                     0.0
 
 
-getSkill1DamageScale : Player -> Weapon.Class -> Zed.HitZone -> Damage.Scale
-getSkill1DamageScale player weapon hitzone =
-    case player.perk of
-        Commando ->
+getSkillDamageScale : Skill -> Weapon.Class -> Zed.HitZone -> Damage.Scale
+getSkillDamageScale skill weapon hitzone =
+    case skill of
+        Fallback ->
             0.0
 
-        SharpShooter ->
-            case player.skill1 of
-                Left ->
-                    0.25
+        HollowPointRounds ->
+            0.3
 
-                _ ->
-                    0.0
+        MachineGunner ->
+            0.03
 
+        Sniper ->
+            0.25
 
-getSkill2DamageScale : Player -> Weapon.Class -> Zed.HitZone -> Damage.Scale
-getSkill2DamageScale player weapon hitzone =
-    0.0
+        Stability ->
+            0.3
 
+        RackEmUpFirst ->
+            0.1
 
-getSkill3DamageScale : Player -> Weapon.Class -> Zed.HitZone -> Damage.Scale
-getSkill3DamageScale player weapon hitzone =
-    0.0
+        RackEmUpMax ->
+            0.5
 
+        DeadEye ->
+            0.1
 
-getSkill4DamageScale : Player -> Weapon.Class -> Zed.HitZone -> Damage.Scale
-getSkill4DamageScale player weapon hitzone =
-    0.0
-
-
-getSkill5DamageScale : Player -> Weapon.Class -> Zed.HitZone -> Damage.Scale
-getSkill5DamageScale player weapon hitzone =
-    0.0
-
-
-skillFromStr : String -> Skill
-skillFromStr skill =
-    case skill of
-        "left" ->
-            Left
-
-        "right" ->
-            Right
+        Assassin ->
+            0.35
 
         _ ->
-            NotApplied
+            0.0
 
 
-skillToStr : Skill -> String
-skillToStr skill =
-    case skill of
-        Left ->
-            "left"
-
-        Right ->
-            "right"
-
-        _ ->
-            "not_applied"
-
-
-getSkill1Name : Perk -> Skill -> String
-getSkill1Name perk skill =
+getSkillNames : Perk -> ( List String, List String, List String, List String, List String )
+getSkillNames perk =
     case perk of
         Commando ->
-            case skill of
-                Left ->
-                    "???"
-
-                Right ->
-                    "???"
-
-                _ ->
-                    "Not Applied"
+            ( [ "Tactical Reload (Commando)", "High Capacity Mags" ]
+            , [ "Fallback", "Impact Rounds" ]
+            , [ "Tenacious", "Prepared" ]
+            , [ "Hollow Point Rounds", "Eat Lead" ]
+            , [ "ZED TIME - Tactician", "ZED TIME - Machine Gunner" ]
+            )
 
         SharpShooter ->
-            case skill of
-                Left ->
-                    "Sniper"
-
-                Right ->
-                    "Marksman"
-
-                _ ->
-                    "Not Applied"
+            ( [ "Sniper", "Marksman" ]
+            , [ "Stability", "Ballistic Shock" ]
+            , [ "Rack'em Up (First shot)", "Rack'em Up (Max)", "Tactical Reload (SharpShooter)" ]
+            , [ "DeadEye", "Always Prepared" ]
+            , [ "ZED TIME - Assassin", "ZED TIME - Ranger" ]
+            )
 
 
 isPerkWeapon : Perk -> Weapon.Class -> Bool
